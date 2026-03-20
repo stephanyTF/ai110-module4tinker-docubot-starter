@@ -89,8 +89,15 @@ class DocuBot:
         - Count how many appear in the text
         - Return the count as the score
         """
-        # TODO: implement scoring
-        return 0
+        score = 0
+        query_words = query.strip().split()
+        text_words = text.lower().split()
+        for word in query_words:
+            word = word.lower()
+            if word in text_words:
+                score += 1
+        return score
+
 
     def retrieve(self, query, top_k=3):
         """
