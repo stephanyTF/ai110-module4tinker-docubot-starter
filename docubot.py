@@ -19,8 +19,10 @@ class DocuBot:
         self.docs_folder = docs_folder
         self.llm_client = llm_client
 
-        # Load documents into memory
+        # Load documents into memory 
         self.documents = self.load_documents()  # List of (filename, text)
+
+        print(f"Loaded {len(self.documents)} documents from {self.docs_folder}.")
 
         # Build a retrieval index (implemented in Phase 1)
         self.index = self.build_index(self.documents)
@@ -107,8 +109,13 @@ class DocuBot:
         Return a list of (filename, text) sorted by score descending.
         """
         results = []
-        # TODO: implement retrieval logic
-        return results[:top_k]
+        for filename, text in self.documents:
+            score = self.score_document(query, text)
+            if score > 0:
+                results.append((filename, text, score))
+        results.sort(key=lambda x: x[2], reverse=True)
+
+        return [(filename, text) for filename, text, score in results[:top_k]]
 
     # -----------------------------------------------------------
     # Answering Modes
