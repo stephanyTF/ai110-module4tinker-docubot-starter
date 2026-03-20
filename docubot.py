@@ -11,7 +11,7 @@ import os
 import glob
 
 class DocuBot:
-    def __init__(self, docs_folder="docs", llm_client=None):
+    def __init__(self, docs_folder="ai110-module4tinker-docubot-starter/docs", llm_client=None): #docs
         """
         docs_folder: directory containing project documentation files
         llm_client: optional Gemini client for LLM based answers
