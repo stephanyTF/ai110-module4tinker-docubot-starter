@@ -104,7 +104,7 @@ class DocuBot:
     # -----------------------------------------------------------
 
     
-    def score_document(self, query, section_text):
+    def score_document(self, query, section_text, filename=""):
         """
         TODO (Phase 1):
         Return a simple relevance score and section text for how well the text matches the query.
@@ -114,13 +114,20 @@ class DocuBot:
         - Count how many appear in the text
         - Return the count as the score
         """
+        STOP_WORDS = {"how", "do", "i", "the", "a", "an", "is", "what", "where",
+                      "when", "why", "can", "to", "in", "of", "and", "or", "my",
+                      "me", "it", "this", "that", "for", "with", "are", "does"}
         score = 0
-        query_words = query.strip().split()
-        text_words = section_text.lower().split()
+        query_words = [w.lower() for w in query.strip().split() if w.lower() not in STOP_WORDS]
+        text_words = set(section_text.lower().split())
         for word in query_words:
-            word = word.lower()
             if word in text_words:
                 score += 1
+
+        filename_stem = os.path.splitext(filename)[0].lower()
+        for word in query_words:
+            if word in filename_stem:
+                score += 2
 
         # for word in query_words:
         #     word = word.lower()
@@ -138,7 +145,7 @@ class DocuBot:
         """
         results = []
         for filename, section in self.documents:
-            score = self.score_document(query, section)
+            score = self.score_document(query, section, filename)
             if score > 0:
                 results.append((filename, section, score))
         results.sort(key=lambda x: x[2], reverse=True)
@@ -160,8 +167,10 @@ class DocuBot:
             return "I do not know based on these docs."
 
         formatted = []
+        source_num = 0
         for filename, text in snippets:
-            formatted.append(f"[{filename}]\n{text}\n")
+            source_num +=1
+            formatted.append(f"✅ Source# {source_num}: [{filename}]\n{text}\n")
 
         return "\n---\n".join(formatted)
 
