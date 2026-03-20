@@ -9,6 +9,8 @@ Core DocuBot class responsible for:
 
 import os
 import glob
+import re  # added for section splitting
+
 
 class DocuBot:
     def __init__(self, docs_folder="ai110-module4tinker-docubot-starter/docs", llm_client=None): #docs
@@ -31,19 +33,39 @@ class DocuBot:
     # Document Loading
     # -----------------------------------------------------------
 
+    def split_into_sections(self, text):
+        """Split document text into sections at ## or ### header boundaries."""
+        lines = text.split('\n')
+        sections = []
+        current = []
+        for line in lines:
+            if re.match(r'^#{2,}\s', line) and current:
+                sections.append('\n'.join(current))
+                current = [line]
+            else:
+                current.append(line)
+        if current:
+            sections.append('\n'.join(current))
+        return [s for s in sections if s.strip()]
+    
+
     def load_documents(self):
         """
         Loads all .md and .txt files inside docs_folder.
         Returns a list of tuples: (filename, text)
         """
         docs = []
+
         pattern = os.path.join(self.docs_folder, "*.*")
         for path in glob.glob(pattern):
             if path.endswith(".md") or path.endswith(".txt"):
                 with open(path, "r", encoding="utf8") as f:
                     text = f.read()
                 filename = os.path.basename(path)
-                docs.append((filename, text))
+                sections = self.split_into_sections(text)
+                for section in sections:
+                    docs.append((filename, section))
+        
         return docs
 
     # -----------------------------------------------------------
@@ -81,10 +103,11 @@ class DocuBot:
     # Scoring and Retrieval (Phase 1)
     # -----------------------------------------------------------
 
-    def score_document(self, query, text):
+    
+    def score_document(self, query, section_text):
         """
         TODO (Phase 1):
-        Return a simple relevance score for how well the text matches the query.
+        Return a simple relevance score and section text for how well the text matches the query.
 
         Suggested baseline:
         - Convert query into lowercase words
@@ -93,11 +116,16 @@ class DocuBot:
         """
         score = 0
         query_words = query.strip().split()
-        text_words = text.lower().split()
+        text_words = section_text.lower().split()
         for word in query_words:
             word = word.lower()
             if word in text_words:
                 score += 1
+
+        # for word in query_words:
+        #     word = word.lower()
+        #     if word in text_words:
+        #         score += 1
         return score
 
 
@@ -109,13 +137,13 @@ class DocuBot:
         Return a list of (filename, text) sorted by score descending.
         """
         results = []
-        for filename, text in self.documents:
-            score = self.score_document(query, text)
+        for filename, section in self.documents:
+            score = self.score_document(query, section)
             if score > 0:
-                results.append((filename, text, score))
+                results.append((filename, section, score))
         results.sort(key=lambda x: x[2], reverse=True)
 
-        return [(filename, text) for filename, text, score in results[:top_k]]
+        return [(filename, section) for filename, section, _ in results[:top_k]]
 
     # -----------------------------------------------------------
     # Answering Modes
