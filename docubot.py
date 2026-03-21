@@ -24,7 +24,7 @@ class DocuBot:
         # Load documents into memory 
         self.documents = self.load_documents()  # List of (filename, text)
 
-        print(f"Loaded {len(self.documents)} documents from {self.docs_folder}.")
+        #print(f"Loaded {len(self.documents)} documents from {self.docs_folder}.")
 
         # Build a retrieval index (implemented in Phase 1)
         self.index = self.build_index(self.documents)
@@ -118,10 +118,12 @@ class DocuBot:
                       "when", "why", "can", "to", "in", "of", "and", "or", "my",
                       "me", "it", "this", "that", "for", "with", "are", "does"}
         score = 0
-        query_words = [w.lower() for w in query.strip().split() if w.lower() not in STOP_WORDS]
+        query_words = [w.strip("?.!").lower() for w in query.strip().split() if w.lower() not in STOP_WORDS]
         text_words = set(section_text.lower().split())
         for word in query_words:
+            #print(f"checking {word:}")
             if word in text_words:
+                #print("Exists in this section")
                 score += 1
 
         filename_stem = os.path.splitext(filename)[0].lower()
@@ -145,6 +147,7 @@ class DocuBot:
         """
         results = []
         for filename, section in self.documents:
+            #print(f"IN filename: {filename}")
             score = self.score_document(query, section, filename)
             if score > 0:
                 results.append((filename, section, score))
