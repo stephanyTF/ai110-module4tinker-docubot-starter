@@ -227,6 +227,7 @@ class DocuBot:
             )
 
         snippets = self.retrieve(query, top_k=top_k)
+        #print(f"DEBUG: retrieve returned {len(snippets)} snippets")
 
         if not snippets:
             return "I do not know based on these docs."
