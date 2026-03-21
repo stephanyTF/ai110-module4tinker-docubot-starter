@@ -13,13 +13,15 @@ import re  # added for section splitting
 
 
 class DocuBot:
-    def __init__(self, docs_folder="ai110-module4tinker-docubot-starter/docs", llm_client=None): #docs
+    def __init__(self, docs_folder="ai110-module4tinker-docubot-starter/docs", llm_client=None, min_top_score=2, min_coverage=0.4): #docs
         """
         docs_folder: directory containing project documentation files
         llm_client: optional Gemini client for LLM based answers
         """
         self.docs_folder = docs_folder
         self.llm_client = llm_client
+        self.min_top_score = min_top_score
+        self.min_coverage = min_coverage
 
         # Load documents into memory 
         self.documents = self.load_documents()  # List of (filename, text)
@@ -153,9 +155,21 @@ class DocuBot:
                 results.append((filename, section, score))
         results.sort(key=lambda x: x[2], reverse=True)
 
-        #GUARD RAIL: Prevenet from returning non significant answers
-        if score == 0:
+        # GUARD RAIL 1: Best result must be a strong enough match
+        if not results or results[0][2] < self.min_top_score:
             return []
+
+        # GUARD RAIL 2: Enough query words must appear in the best result
+        STOP_WORDS = {"how", "do", "i", "the", "a", "an", "is", "what", "where",
+                      "when", "why", "can", "to", "in", "of", "and", "or", "my",
+                      "me", "it", "this", "that", "for", "with", "are", "does"}
+        query_words = [w.strip("?.!").lower() for w in query.strip().split() if w.lower() not in STOP_WORDS]
+        if query_words:
+            best_doc_words = set(results[0][1].lower().split())
+            coverage = sum(1 for w in query_words if w in best_doc_words) / len(query_words)
+            if coverage < self.min_coverage:
+                return []
+
 
 
         return [(filename, section) for filename, section, _ in results[:top_k]]
