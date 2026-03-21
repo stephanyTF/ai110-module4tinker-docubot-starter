@@ -153,6 +153,11 @@ class DocuBot:
                 results.append((filename, section, score))
         results.sort(key=lambda x: x[2], reverse=True)
 
+        #GUARD RAIL: Prevenet from returning non significant answers
+        if score == 0:
+            return []
+
+
         return [(filename, section) for filename, section, _ in results[:top_k]]
 
     # -----------------------------------------------------------
