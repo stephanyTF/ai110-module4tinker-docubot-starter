@@ -1,3 +1,14 @@
+# Wk 7 TF Task Submission
+
+The core concept students needed to understand was how a RAG (retrieval-augmented generation) system works, including query-to-text matching, scoring relevant results, and applying guardrails to prevent incorrect or misleading outputs.
+
+Students are most likely to struggle with environment setup, particularly configuring environment variables and installing missing dependencies that are not clearly outlined in the provided instructions. Another common issue is documents not loading correctly, which can break the entire pipeline without obvious errors. AI tools were helpful for troubleshooting technical issues, such as identifying missing requirements or bugs, but could also be proposing solutions that don’t fix the local environment issue and I have to resolve them myself. For example, Claude tried to give me code to read the docs path correctly but it didn’t work so I had to replace a default “docs” path with a local file path resolved one issue but it may not be the most robust solution. Students may also find it challenging to design effective guardrails for handling irrelevant or off-topic queries. 
+
+To guide a student without giving the answer, I would prompt them to revisit the full pipeline step-by-step, asking targeted questions about each stage and encouraging the use of debugging strategies like print statements to verify where the process is failing.
+
+
+
+
 # DocuBot
 
 DocuBot is a small documentation assistant that helps answer developer questions about a codebase.  
