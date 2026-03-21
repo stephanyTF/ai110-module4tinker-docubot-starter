@@ -13,7 +13,7 @@ import re  # added for section splitting
 
 
 class DocuBot:
-    def __init__(self, docs_folder="ai110-module4tinker-docubot-starter/docs", llm_client=None, min_top_score=2, min_coverage=0.4): #docs
+    def __init__(self, docs_folder="ai110-module4tinker-docubot-starter/docs", llm_client=None, min_top_score=2, min_coverage=0.05): 
         """
         docs_folder: directory containing project documentation files
         llm_client: optional Gemini client for LLM based answers
@@ -105,6 +105,12 @@ class DocuBot:
     # Scoring and Retrieval (Phase 1)
     # -----------------------------------------------------------
 
+    def stem(self, word):
+        for suffix in ("ing", "tion", "ed", "er", "s"):
+            if word.endswith(suffix) and len(word) > len(suffix) + 2:
+                return word[:-len(suffix)]
+        return word
+
     
     def score_document(self, query, section_text, filename=""):
         """
@@ -120,23 +126,36 @@ class DocuBot:
                       "when", "why", "can", "to", "in", "of", "and", "or", "my",
                       "me", "it", "this", "that", "for", "with", "are", "does"}
         score = 0
-        query_words = [w.strip("?.!").lower() for w in query.strip().split() if w.lower() not in STOP_WORDS]
-        text_words = set(section_text.lower().split())
+
+        query_words = []
+        for token in query.strip().split():
+            parts = re.split(r'[/<>?.!]', token.lower())
+            for part in parts:
+                if part and part not in STOP_WORDS:
+                    query_words.append(part)
+
+        
+        
+        text_stems = {self.stem(w) for w in section_text.lower().split()}
+
         for word in query_words:
             #print(f"checking {word:}")
-            if word in text_words:
-                #print("Exists in this section")
+            if self.stem(word) in text_stems:
                 score += 1
+                #print("Exists in this section")
+
+            
+        # text_words = set(section_text.lower().split())
+        # for word in query_words:
+        #     if word in text_words:
+        #         score += 1
 
         filename_stem = os.path.splitext(filename)[0].lower()
         for word in query_words:
             if word in filename_stem:
                 score += 2
 
-        # for word in query_words:
-        #     word = word.lower()
-        #     if word in text_words:
-        #         score += 1
+      
         return score
 
 

@@ -69,7 +69,11 @@ def evaluate_retrieval(bot, top_k=3):
 
         retrieved_files = [fname for fname, _ in retrieved]
 
-        hit = any(f in retrieved_files for f in expected) if expected else False
+        if expected:
+            hit = any(f in retrieved_files for f in expected)
+        else:
+            # No expected files means the query is off-topic — a correct retrieval returns nothing
+            hit = len(retrieved_files) == 0
         if hit:
             hits += 1
 
